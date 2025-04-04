@@ -5,9 +5,9 @@
 
 In this repository, we provide our code used to obtain the results from our paper on approximating non-Gaussian partitions with normalising flows. The implementation of the entropy calculation via the normalising flow and of the flow expansion approximation are found in the "flow_expansion" folder. An exemplary application on a Gaussian toy model is shown in "example.ipynb".
 
-Replacing the "samples" in this notebook allows to train the network on one's own posterior data. In that manner, one could for example manually include the [Union2.1][Union2.1] dataset (after obtaining a posterior via the [emcee][emcee] package for example).
+Replacing the "samples" in this notebook allows to train the network on one's own posterior data. In that manner, one could for example manually include the [Union2.1][Union2.1] dataset as done in the paper (for sure, after obtaining a posterior via the e.g. [emcee][emcee]).
 
-We want to mention again, that our implementation is based on the normalising flow package [FrEIA][FrEIA].
+We want to thankfully mention, that our implementation is based on the normalising flow package [FrEIA][FrEIA] by Ardizzone et al.
 
 [Union2.1]: https://supernova.lbl.gov/union/figures/SCPUnion2.1_mu_vs_z.txt
 [emcee]: https://emcee.readthedocs.io/en/stable/
@@ -15,14 +15,14 @@ We want to mention again, that our implementation is based on the normalising fl
 
 ## Required packages
 
-To successfully run the example notebook, the following packages are required:
+To successfully run the exemplary Jupyter notebook, the following packages are required:
 - [PyTorch][PyTorch]
 - [NumPy][NumPy]
 - [SciPy][SciPy]
 - [Matplotlib][Matplotlib]
 - [pandas][pandas]
 - [seaborn][seaborn]
-- [FrEIA][FrEIA] (which can easily be installed via "pip install FrEIA" e.g.)
+- [FrEIA][FrEIA] (which can easily be installed via e.g. "pip install FrEIA")
 
 [pandas]: https://pandas.pydata.org
 [seaborn]: https://seaborn.pydata.org
@@ -41,10 +41,10 @@ In order to execute the "example.ipynb", make sure that you have the Jupyter ker
 
 ## Acknowledgements
 
-If you use any part of this repository please cite the following paper:
+If you use any part of this repository please cite our corresponding paper:
 
 ```
-@misc{schosser2024markovwalkexplorationmodel,
+@misc{approximating_partitions_nf,
       title={Approximating non-Gaussian Bayesian partitions with normalising flows: statistics, inference and application to cosmology}, 
       author={R{\"o}spel, Tobias and Schlosser, Adrian and Sch{\"a}fer, Bj{\"o}rn Malte},
       year={2025},
