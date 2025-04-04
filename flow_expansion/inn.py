@@ -13,10 +13,10 @@ import pickle
 from tqdm import tqdm
 from typing import List
 
-#Function yields Vanilla INN
+#Function yields Vanilla INN (similarly to FreIA documentation)
 def inn_vanilla(N_DIM: int, N_LAYERS: int, WIDTH_SUBNET: int, permute_soft: bool):
     def subnet_fc(dims_in, dims_out):
-        return nn.Sequential(nn.Linear(dims_in, WIDTH_SUBNET), nn.GELU(), #nn.SELU(), #nn.ReLU(), # changed from ReLU
+        return nn.Sequential(nn.Linear(dims_in, WIDTH_SUBNET), nn.GELU(),
                          nn.Linear(WIDTH_SUBNET,  dims_out))
     inn = Ff.SequenceINN(N_DIM)
     for k in range(N_LAYERS):

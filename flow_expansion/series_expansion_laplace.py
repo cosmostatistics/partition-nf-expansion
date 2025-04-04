@@ -67,6 +67,7 @@ def standardized_moments_calc(n_flow, func: List[int], order_series: int, order_
     nth_standardized_moments = [nth_standardized_moment(i, nth_central_moments) for i in range(order_moment)]
     return nth_standardized_moments
 
+#Calculate mean, variance, skewness and kurtosis
 def mean_var_skew_kurt(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK) -> List:
     moments = moments_calc(n_flow, func, order_series, order_moment, ndim, NETWORK)
     nth_central_moments = central_moments_calc(n_flow, func, order_series, order_moment, ndim, NETWORK, moments)
@@ -77,6 +78,7 @@ def mean_var_skew_kurt(n_flow, func: List[int], order_series: int, order_moment:
     kurt = nth_standardized_moments[4]
     return mean, var, skew, kurt
 
+#Calculate mean, variance, skewness and kurtosis for 2D
 def mean_var_skew_kurt_2d(n_flow, order_series: int, order_moment: int, ndim: int, NETWORK):
     assert ndim == 2, "This function works only in 2D."
     mean_vec = np.ones(2)
