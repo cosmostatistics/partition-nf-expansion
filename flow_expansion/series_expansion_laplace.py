@@ -5,6 +5,7 @@ import numpy as np
 from typing import List
 from flow_expansion import inn
 
+#Function to compare the predicted samples with the true samples in one dimension (chosen by 'direction' varible)
 def compare_predictions_samples(samples: np.ndarray, samples_pred: np.ndarray, NDIM: int, direction: int = 0) -> List:
     if NDIM > 1:
         samples = samples[:, direction]
@@ -19,7 +20,7 @@ def compare_predictions_samples(samples: np.ndarray, samples_pred: np.ndarray, N
     cumulants_norm_true = [np.mean(samples), np.var(samples), scs.skew(samples), scs.kurtosis(samples,fisher=False)]
     return cumulants_norm_true
 
-#Moment calculation (zeros moment is integral over posterior)
+#Moment calculation (zeroth moment is integral over posterior)
 def moment_calc(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK) -> float:
     laplacian = inn.laplacian(n_flow, func, order_series, order_moment, ndim, NETWORK)
     sum_series = 0
@@ -27,7 +28,7 @@ def moment_calc(n_flow, func: List[int], order_series: int, order_moment: int, n
         sum_series += laplacian[k] *1/(2**k * math.factorial(k))
     return sum_series
 
-#Higher moments calculation
+#Calculate moments up to order_moment and store in list
 def moments_calc(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK) -> List:
     moments = [moment_calc(n_flow, func, order_series, i, ndim, NETWORK) for i in range(order_moment)]
     return moments
@@ -40,7 +41,7 @@ def nth_central_moment(n: int, moments: List) -> float:
         sum += scsp.binom(n, k) * moments[k]* moments[1]**(n-k) * (-1)**(n-k)
     return sum
 
-#Calculate central moments
+#Calculate central moments up to order_moment and store in list
 def central_moments_calc(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK, moments: List = None) -> List:
     if moments is not None:
         moments = moments
@@ -49,7 +50,7 @@ def central_moments_calc(n_flow, func: List[int], order_series: int, order_momen
     nth_central_moments = [nth_central_moment(i, moments) for i in range(order_moment)]
     return nth_central_moments
 
-#Calculate nth standardized moment
+#Calculate nth standardised moment
 def nth_standardized_moment(n: int, central_moments: List) -> float:
     assert len(central_moments) > n-1, "Not enough cumulants calculated"
 
@@ -58,7 +59,7 @@ def nth_standardized_moment(n: int, central_moments: List) -> float:
     else:
         return central_moments[n] / central_moments[2]**(n/2)
     
-#Calculate standardized moments
+#Calculate standardised moments
 def standardized_moments_calc(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK, nth_central_moments = None) -> List:
     if nth_central_moments is not None:
         nth_central_moments = nth_central_moments
@@ -67,7 +68,7 @@ def standardized_moments_calc(n_flow, func: List[int], order_series: int, order_
     nth_standardized_moments = [nth_standardized_moment(i, nth_central_moments) for i in range(order_moment)]
     return nth_standardized_moments
 
-#Calculate mean, variance, skewness and kurtosis
+#Calculate mean, variance, skewness and kurtosis for specific case defined by func (e.g. [1,0] for first dimension, [0,1] for second dimension, [1,1] for covariance)
 def mean_var_skew_kurt(n_flow, func: List[int], order_series: int, order_moment: int, ndim: int, NETWORK) -> List:
     moments = moments_calc(n_flow, func, order_series, order_moment, ndim, NETWORK)
     nth_central_moments = central_moments_calc(n_flow, func, order_series, order_moment, ndim, NETWORK, moments)
@@ -102,5 +103,16 @@ def mean_var_skew_kurt_2d(n_flow, order_series: int, order_moment: int, ndim: in
 
     return mean_vec, cov, skew_vec, kurt_vec
 
-    
-    
+#Mean, variance, skewness and kurtosis for 2d Gaussian toy model
+def toy_model_mean_var_skew_kurt(PARAMS: List) -> None:
+    skew_vec = np.zeros(2)
+    kurt_vec = np.ones(2) * 3
+    print("")
+    print("Ground truth for 2D toy model:")
+    print("Mean:       [{:6.2f} {:6.2f}]".format(PARAMS[0][0], PARAMS[0][1]))
+    print("Covariance:")
+    print("           [{:6.2f} {:6.2f}]".format(PARAMS[1][0][0], PARAMS[1][0][1]))
+    print("           [{:6.2f} {:6.2f}]".format(PARAMS[1][1][0], PARAMS[1][1][1]))
+    print("Skewness:   [{:6.2f} {:6.2f}]".format(skew_vec[0], skew_vec[1]))
+    print("Kurtosis:   [{:6.2f} {:6.2f}]".format(kurt_vec[0], kurt_vec[1]))
+    return None

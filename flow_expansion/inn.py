@@ -61,8 +61,10 @@ def train_inn(DATA: np.ndarray, NETWORK: float, BATCHSIZE: int, N_DIM: int, N_LA
         raise ValueError("Network not implemented")
     inn.to(DEVICE)
     
+    #Define parameter dictionary for saving
     param_dict = {"NETWORK": NETWORK, "BATCHSIZE": BATCHSIZE, "N_DIM": N_DIM, "N_LAYERS": N_LAYERS, "LEARNING_RATE": LEARNING_RATE, "WIDTH_SUBNET": WIDTH_SUBNET, "NUM_EPOCS": NUM_EPOCS, "DEVICE": DEVICE, "PERMUTE_SOFT": PERMUTE_SOFT}
 
+    #Choose Adam optimizer
     optimizer = torch.optim.Adam(inn.parameters(), lr=LEARNING_RATE)
     
     #Create DataLoaders
@@ -111,6 +113,12 @@ def train_inn(DATA: np.ndarray, NETWORK: float, BATCHSIZE: int, N_DIM: int, N_LA
         torch.save(inn.state_dict(), path_to_files+'inn_state_dict.pth')
     
     if plot:    
+        # Configure Matplotlib to use LaTeX for text rendering
+        plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+        plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+        plt.rcParams.update({'font.size': 14})
+    
         plt.title('Training Loss')
         plt.plot(training_loss)
         plt.xlabel('Training Steps')
@@ -145,6 +153,12 @@ def plot_results(inn, nsamples: int, N_DIM: int, samples: np.ndarray, save: bool
         else:
             assert N_DIM == 2, "Only implemented for 2D"
             samples_pred_plot = samples_pred
+    
+    # Configure Matplotlib to use LaTeX for text rendering
+    plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+    plt.rcParams.update({'font.size': 14})
     
     # plot samples
     bins = 100

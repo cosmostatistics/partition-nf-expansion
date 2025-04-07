@@ -22,6 +22,7 @@ To successfully run the exemplary Jupyter notebook, the following packages are r
 - [Matplotlib][Matplotlib]
 - [pandas][pandas]
 - [seaborn][seaborn]
+- [tqdm][tqdm]
 - [FrEIA][FrEIA] (which can easily be installed via e.g. "pip install FrEIA")
 
 [pandas]: https://pandas.pydata.org
@@ -30,6 +31,7 @@ To successfully run the exemplary Jupyter notebook, the following packages are r
 [SciPy]: https://scipy.org
 [PyTorch]: https://pytorch.org
 [NumPy]: https://numpy.org
+[tqdm]: https://tqdm.github.io
 
 ## Usage
 To use the code, simply clone this repository:

@@ -2,8 +2,8 @@ import os
 import matplotlib.pyplot as plt
 from typing import List
 import numpy as np
-#import supernovae_handling as sh
 
+#Accumulation function for the data generation
 def generate_data(model: str, params: List = None, dim: int = 2, nsamples: int = 10000, plot: bool = False, save: bool = False, path_to_files: str = ""):
     if model == "gaussian":
         samples = generate_gaussian(params, dim, nsamples, plot, save, path_to_files)
@@ -12,12 +12,11 @@ def generate_data(model: str, params: List = None, dim: int = 2, nsamples: int =
         samples = generate_gaussian(params, dim, nsamples, plot, save, path_to_files, offdiagonal)
     elif model == "multimodal_gaussian":
         samples = generate_mutimodal_gaussian(params, dim, nsamples, plot, save, path_to_files)
-    # elif model == "supernova":
-    #     samples = sh.load_samples(plot = plot)
     else:
         raise ValueError("Model not implemented")
     return samples
 
+#Generate Gaussian samples
 def generate_gaussian(params: List, dim: int, nsamples: int, plot: bool = False, save: bool = False, path_to_files: str = "", offdiagonal: bool = False):
     assert len(params) == 2, "The parameters for the Gaussian model are mu and sigma"
     if dim == 1:
@@ -38,6 +37,12 @@ def generate_gaussian(params: List, dim: int, nsamples: int, plot: bool = False,
     else:
         raise ValueError("The dimension of the Gaussian model must be greater than 0")
     if plot:
+        # Configure Matplotlib to use LaTeX for text rendering
+        plt.rc('text', usetex=True)
+        plt.rc('font', family='serif')
+        plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
+        plt.rcParams.update({'font.size': 14})
+    
         if not offdiagonal:
             samples_plot = samples[:, 0]
             hist = plt.hist(samples_plot, bins=100, density=True)
@@ -71,6 +76,7 @@ def generate_gaussian(params: List, dim: int, nsamples: int, plot: bool = False,
             np.save(path_to_files+"cov_gaussian.npy", params[1])
     return samples
 
+#Generate multimodal Gaussian samples
 def generate_mutimodal_gaussian(params: List, dim: int, nsamples: int, plot: bool = False, save: bool = False, path_to_files: str = ""):
     #Params have to be a list of list with mean and cov each: [[np.array([0, 0]), np.array([[2, 1],[1, 1]])], [np.array([4, 4]), np.array([[1, 0],[0, 1]])]]
     try:

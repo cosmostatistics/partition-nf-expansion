@@ -4,10 +4,11 @@ import torch
 
 from matplotlib.patches import Polygon
 from scipy.spatial import ConvexHull
-from matplotlib.ticker import MaxNLocator
 
+#Choose device
 DEVICE = torch.device('cpu')
 
+#Function to obtain the jacobian and its determinant at a specific point
 def jacobian_cal(n_flow, nsamples: int = 10000,ndim: int = 2,sampling: bool = True,point: np.ndarray = [0.,0.]) -> np.ndarray:
 
     if sampling == True:
@@ -27,6 +28,7 @@ def jacobian_cal(n_flow, nsamples: int = 10000,ndim: int = 2,sampling: bool = Tr
 
     return jacobian,logdet
 
+#Function to decompose the jacobian into the basis matrices
 def decomposition_jacobian(jacobian: np.ndarray, i:int = 0) -> np.ndarray:
     # Basis matrices
     M1 = np.array([[1, 0], [0, 1]])
@@ -44,10 +46,7 @@ def decomposition_jacobian(jacobian: np.ndarray, i:int = 0) -> np.ndarray:
     kappa, gamma_1, gamma_2, omega = coefficients
     print(f"Kappa: {kappa}, Gamma_1: {gamma_1}, Gamma_2: {gamma_2}, Omega: {omega}")
 
-    A_reconstructed = kappa * M1 + gamma_1 * M2 + gamma_2 * M3 + omega * M4
-    # print(A_reconstructed)
-    # print(A)
-
+#Visulaising the geometrical volume change
 def geometrical_volume_change(n_flow, path_to_save_plots: str, nsamples: int = 10000, gridsize: int = 20, N_DIM: int = 2) -> None:
 
     #Create 2d grid on alpha space
@@ -68,59 +67,6 @@ def geometrical_volume_change(n_flow, path_to_save_plots: str, nsamples: int = 1
     alphas = torch.randn(nsamples, N_DIM).to(DEVICE).double()
     thetas, _ = n_flow(alphas, rev=True)
     alphas, thetas= alphas.cpu().detach().numpy(), thetas.cpu().detach().numpy()
-    
-    # #Plotting settings
-    # plt.rc('text', usetex=True)
-    # plt.rc('font', family='serif')
-    # plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    # plt.rcParams.update({'font.size': 24})
-    
-    # #Plot transformed posterior
-    # plt.figure(figsize=(7.5, 10))
-    # plt.hist2d(thetas[:,0], thetas[:,1], bins=100, cmap='viridis')
-    # for i in range(len(alpha1_lin)):
-    #     plt.plot(theta1[i,:], theta2[i, :], color='white', lw=0.5)  
-    #     plt.plot(theta1[:, i], theta2[:,i], color='white', lw=0.5)
-    # plt.xlim(theta1.min(), theta1.max())
-    # plt.ylim(theta2.min(), theta2.max())
-    # plt.xlabel('$\\theta_1$')
-    # plt.gca().yaxis.set_label_position('right')
-    # plt.gca().yaxis.set_ticks_position('right')
-    # plt.ylabel('$\\theta_2$')
-
-
-    # #Plotting specific box on theta grid
-    # griddy = gridsize//3
-    # bottom_left = [theta1[griddy,griddy], theta2[griddy,griddy]]
-    # bottom_right = [theta1[griddy+1,griddy], theta2[griddy+1,griddy]]
-    # top_right = [theta1[griddy+1,griddy+1], theta2[griddy+1,griddy+1]]
-    # top_left = [theta1[griddy,griddy+1], theta2[griddy,griddy+1]]
-    # poly = np.vstack([bottom_left, bottom_right, top_right, top_left, bottom_left])
-    # polygon = Polygon(poly, closed=True, linewidth=2.5, edgecolor='red', fill=False, facecolor='red')
-    # plt.gca().add_patch(polygon)
-    # plt.savefig(path_to_save_plots+'grid_transformation_posterior.png', dpi = 300, bbox_inches='tight')
-    # plt.show()
-
-    # #Plot original grid
-    # plt.figure(figsize=(7.5, 10))
-    # plt.hist2d(alphas[:,0],alphas[:,1], bins=100, cmap='viridis')
-    # for i in range(len(alpha1_lin)):
-    #     plt.plot(alpha1[i, :], alpha2[i, :], color='white', lw=0.5)  
-    #     plt.plot(alpha1[:, i], alpha2[:, i], color='white', lw=0.5)
-    # plt.xlim(alpha1_lin[0], alpha1_lin[-1])
-    # plt.ylim(alpha2_lin[0], alpha2_lin[-1])
-    # plt.xlabel('$\\alpha_1$')
-    # plt.ylabel('$\\alpha_2$')
-
-    # #Plotting specific box on alpha grid
-    # griddy = gridsize//3
-    # a0, a1 = alpha1[griddy,griddy],alpha2[griddy,griddy] 
-    # width, height = alpha1[griddy+1,griddy+1]-alpha1[griddy,griddy], alpha2[griddy+1,griddy+1]-alpha2[griddy,griddy]
-    # rect = plt.Rectangle((a0, a1), width, height, linewidth=3, edgecolor='red', fill=False, facecolor='red')
-    # plt.gca().add_patch(rect)
-    
-    # plt.savefig(path_to_save_plots+'grid_transformation_gauss.png', dpi = 300, bbox_inches='tight')
-    # plt.show()
     
     # Plotting settings
     plt.rc('text', usetex=True)
@@ -193,133 +139,3 @@ def geometrical_volume_change(n_flow, path_to_save_plots: str, nsamples: int = 1
     jacobian = jacobian[0]
     print(f"Jacobian at specific box: {jacobian}")
     decomposition_jacobian(jacobian)
-    
-def presen_geometrical_volume_change(n_flow, path_to_save_plots: str, nsamples: int = 10000, gridsize: int = 20, N_DIM: int = 2) -> None:
-
-    #Create 2d grid on alpha space
-    alpha1_lin = np.linspace(-2, 2, gridsize)
-    alpha2_lin = np.linspace(-2, 2, gridsize)
-    alpha1, alpha2 = np.meshgrid(alpha1_lin, alpha2_lin)
-    grid = np.vstack([alpha1.ravel(), alpha2.ravel()]).T
-
-    #Transform to theta space
-    grid = torch.tensor(grid).to(DEVICE).double()
-    theta_grid, logdet_grid = n_flow(grid, rev=True)
-    theta_grid = theta_grid.cpu().detach().numpy()
-    logdet_grid = logdet_grid.cpu().detach().numpy()
-    theta1 = theta_grid[:,0].reshape(gridsize,gridsize)
-    theta2 = theta_grid[:,1].reshape(gridsize,gridsize)
-
-    #Reverse inn
-    alphas = torch.randn(nsamples, N_DIM).to(DEVICE).double()
-    thetas, _ = n_flow(alphas, rev=True)
-    alphas, thetas= alphas.cpu().detach().numpy(), thetas.cpu().detach().numpy()
-    
-    #Plotting settings
-    plt.rc('text', usetex=True)
-    plt.rc('font', family='serif')
-    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
-    plt.rcParams.update({'font.size': 24})
-    
-    #Plot zoom
-    plt.figure(figsize=(10, 6))
-    plt.hist2d(thetas[:,0], thetas[:,1], bins=100, cmap='viridis')
-    for i in range(len(alpha1_lin)):
-        plt.plot(theta1[i,:], theta2[i, :], color='white', lw=0.5)  
-        plt.plot(theta1[:, i], theta2[:,i], color='white', lw=0.5)
-    plt.xlim(0.20,0.35)
-    plt.ylim(-1.2,-0.8)
-    plt.xlabel('$\Omega_m$')
-    plt.ylabel('$w_0$')
-
-    #Plotting specific box on theta grid
-    griddy = gridsize//3
-    bottom_left = [theta1[griddy,griddy], theta2[griddy,griddy]]
-    bottom_right = [theta1[griddy+1,griddy], theta2[griddy+1,griddy]]
-    top_right = [theta1[griddy+1,griddy+1], theta2[griddy+1,griddy+1]]
-    top_left = [theta1[griddy,griddy+1], theta2[griddy,griddy+1]]
-    poly = np.vstack([bottom_left, bottom_right, top_right, top_left, bottom_left])
-    polygon = Polygon(poly, closed=True, linewidth=2.5, edgecolor='red', fill=False, facecolor='red')
-    plt.gca().add_patch(polygon)
-    plt.gca().xaxis.set_major_locator(MaxNLocator(nbins=5))
-    plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=5))
-    plt.tight_layout()
-    plt.savefig(path_to_save_plots+'grid_transformation_zoomed.png', dpi = 300, bbox_inches='tight')
-    plt.show()
-    
-    #Plot transformed posterior
-    plt.figure(figsize=(10, 10))
-    plt.hist2d(thetas[:,0], thetas[:,1], bins=100, cmap='viridis')
-    for i in range(len(alpha1_lin)):
-        plt.plot(theta1[i,:], theta2[i, :], color='white', lw=0.5)  
-        plt.plot(theta1[:, i], theta2[:,i], color='white', lw=0.5)
-    plt.xlim(theta1.min(), theta1.max())
-    plt.ylim(theta2.min(), theta2.max())
-    plt.xlabel('$\Omega_m$')
-    plt.gca().yaxis.set_label_position('right')
-    plt.gca().yaxis.set_ticks_position('right')
-    plt.ylabel('$w_0$')
-
-
-    #Plotting specific box on theta grid
-    griddy = gridsize//3
-    bottom_left = [theta1[griddy,griddy], theta2[griddy,griddy]]
-    bottom_right = [theta1[griddy+1,griddy], theta2[griddy+1,griddy]]
-    top_right = [theta1[griddy+1,griddy+1], theta2[griddy+1,griddy+1]]
-    top_left = [theta1[griddy,griddy+1], theta2[griddy,griddy+1]]
-    poly = np.vstack([bottom_left, bottom_right, top_right, top_left, bottom_left])
-    polygon = Polygon(poly, closed=True, linewidth=2.5, edgecolor='red', fill=False, facecolor='red')
-    plt.gca().add_patch(polygon)
-    plt.savefig(path_to_save_plots+'grid_transformation_posterior.png', dpi = 300, bbox_inches='tight')
-    plt.show()
-
-    #Plot original grid
-    plt.figure(figsize=(10, 10))
-    plt.hist2d(alphas[:,0],alphas[:,1], bins=100, cmap='viridis')
-    for i in range(len(alpha1_lin)):
-        plt.plot(alpha1[i, :], alpha2[i, :], color='white', lw=0.5)  
-        plt.plot(alpha1[:, i], alpha2[:, i], color='white', lw=0.5)
-    plt.xlim(alpha1_lin[0], alpha1_lin[-1])
-    plt.ylim(alpha2_lin[0], alpha2_lin[-1])
-    plt.xlabel('$\\alpha_1$')
-    plt.ylabel('$\\alpha_2$')
-
-    #Plotting specific box on alpha grid
-    griddy = gridsize//3
-    a0, a1 = alpha1[griddy,griddy],alpha2[griddy,griddy] 
-    width, height = alpha1[griddy+1,griddy+1]-alpha1[griddy,griddy], alpha2[griddy+1,griddy+1]-alpha2[griddy,griddy]
-    rect = plt.Rectangle((a0, a1), width, height, linewidth=3, edgecolor='red', fill=False, facecolor='red')
-    plt.gca().add_patch(rect)
-    
-    plt.savefig(path_to_save_plots+'grid_transformation_gauss.png', dpi = 300, bbox_inches='tight')
-    plt.show()
-
-    #Logdet at specific box and decomposition of jacobian
-    griddy = gridsize//3
-    bottom_left_det = [logdet_grid[griddy**2]]
-    print(f"Logdet at specific box: {bottom_left_det[0]}")
-    area = ConvexHull(poly).volume
-    area_rect = width*height
-    print(f"Area of specific box in theta space: {area}")
-    print(f"Area of specific box in alpha space: {area_rect}")
-
-    point = [a0+width/2,a1+height/2]
-    jacobian,_ = jacobian_cal(n_flow, nsamples, sampling=False,point=point)
-    jacobian = jacobian[0]
-    print(f"Jacobian at specific box: {jacobian}")
-    decomposition_jacobian(jacobian)
-
-
-    #Plot posterior for presi
-    plt.figure(figsize=(10, 10))
-    plt.hist2d(thetas[:,0], thetas[:,1], bins=100, cmap='viridis')
-    #plt.xlim(thetas[:,0].min(), thetas[:,0].max())
-    plt.xlim(0.1,0.5)
-    #plt.ylim(thetas[:,1].min(), thetas[:,1].max())
-    plt.ylim(-1.6, -0.6)
-    plt.xlabel('$\Omega_m$')
-    #plt.gca().yaxis.set_label_position('right')
-    #plt.gca().yaxis.set_ticks_position('right')
-    plt.ylabel('$w_0$')
-    plt.savefig(path_to_save_plots+'just_Supernova.png', dpi = 300, bbox_inches='tight')
-    plt.show()

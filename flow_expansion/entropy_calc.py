@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 from scipy.stats import gaussian_kde
-import scipy.special as scsp
-from typing import List, Tuple
 import matplotlib.pyplot as plt
 
 #Estimate entroy via histogram
@@ -66,73 +64,13 @@ def entropy_flow(inn, DEVICE, N_DIM: int, nsamples: int = 125000) -> float:
     def log_standard_normal2d(alpha: np.ndarray) -> np.ndarray:
         return -0.5*np.sum(alpha**2, axis=1) - np.log(2*np.pi)
 
-    #Run Gaussian samples through INN
+    #Push Gaussian samples through INN
     alphas = torch.randn(nsamples, N_DIM).to(DEVICE).double()
     thetas, logdetthetaalpha = inn(alphas, rev=True)
     alphas, thetas, logdetthetaalpha = alphas.cpu().detach().numpy(), thetas.cpu().detach().numpy(), logdetthetaalpha.cpu().detach().numpy()
     
     return - 1/nsamples * np.sum(log_standard_normal2d(alphas)) + 1/nsamples * np.sum(logdetthetaalpha)
 
-#Analtyical entropy for Gaussian
+#Analtyical entropy for Gaussian toy model
 def entropy_ana_gaussian(cov: np.ndarray, N_DIM :int) -> float:
     return np.log(2*np.pi) + 0.5*np.log(np.linalg.det(cov)) + 0.5*N_DIM
-
-# ### WARUM SIND DIE HIER DRIN?
-
-# #Calculate moments from INN
-# def moment_inn(inn, cumulant: List, N_DIM: int, DEVICE, nsamples: int = 125000) -> float:
-#     alphas = torch.randn(nsamples, N_DIM).to(DEVICE).double()
-#     thetas, logdetthetaalpha = inn(alphas, rev=True)
-#     alphas, thetas, logdetthetaalpha = alphas.cpu().detach().numpy(), thetas.cpu().detach().numpy(), logdetthetaalpha.cpu().detach().numpy()
-#     return 1 / nsamples * np.sum(thetas[:, 0]**cumulant[0] * thetas[:, 1]**cumulant[1])
-
-# def mean_var_skew_kurt_from_moments(moments: List, print_out: bool = True) -> np.ndarray:
-#     #Calculate nth central moment
-#     def nth_central_moment(n: int, moments: List) -> float:
-#         assert len(moments) > n-1, "Not enough moments calculated"
-#         sum = 0
-#         for k in range(0, n+1):
-#             sum += scsp.binom(n, k) * moments[k]* moments[1]**(n-k) * (-1)**(n-k)
-#         return sum
-
-#     #Calculate central moments
-#     def central_moments_calc(order_moment: int, moments: List) -> List:
-#         nth_central_moments = [nth_central_moment(i, moments) for i in range(order_moment)]
-#         return nth_central_moments
-
-#     #Calculate nth standardized moment
-#     def nth_standardized_moment(n: int, central_moments: List) -> float:
-#         assert len(central_moments) > n-1, "Not enough cumulants calculated"
-#         if n == 2:
-#             return 1
-#         else:
-#             return central_moments[n] / central_moments[2]**(n/2)
-        
-#     #Calculate standardized moments
-#     def standardized_moments_calc(order_moment: int, nth_central_moments = None) -> List:
-#         nth_standardized_moments = [nth_standardized_moment(i, nth_central_moments) for i in range(order_moment)]
-#         return nth_standardized_moments
-
-#     moments_long = np.ones(len(moments)+1)
-#     moments_long[1:] = moments
-#     moments = moments_long
-#     order_moment = len(moments)
-#     nth_central_moments = central_moments_calc(order_moment, moments)
-#     nth_standardized_moments = standardized_moments_calc(order_moment, nth_central_moments)
-#     mean = moments[1]
-#     var = nth_central_moments[2]
-#     skew = nth_standardized_moments[3]
-#     kurt = nth_standardized_moments[4]
-#     if print_out:
-#         print("Mean Value:",moments[1],"\n","Variance:", nth_central_moments[2],"\n", "Skewness:", nth_standardized_moments[3],"\n", "Kurtosis:", nth_standardized_moments[4])
-#     #return [mean, var, skew, kurt]
-#     return np.array([mean, var, skew, kurt])
-
-# def mean_var_skew_kurt_theta1_theta2(inn_moments_theta1: np.ndarray, inn_moments_theta2: np.ndarray) -> List[np.ndarray]:
-#     n_test = inn_moments_theta1.shape[1]
-#     quantities_theta1 = np.empty((4, n_test))
-#     quantities_theta2 = np.empty((4, n_test))
-#     for j in range(n_test):
-#         quantities_theta1[:, j] = mean_var_skew_kurt_from_moments(inn_moments_theta1[:, j], print_out=False)
-#         quantities_theta2[:, j] = mean_var_skew_kurt_from_moments(inn_moments_theta2[:, j], print_out=False)
-#     return quantities_theta1, quantities_theta2
